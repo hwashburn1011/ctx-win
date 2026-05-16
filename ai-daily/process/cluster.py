@@ -63,14 +63,14 @@ def _balance_sources(items, caps, log):
     return kept
 
 
-def _assemble_clusters(raw_clusters, by_id, log):
-    """Resolve model output into clusters with embedded items.
-
-    Drops clusters whose ids don't resolve, sorts by importance (desc), and
-    returns (clusters, set_of_placed_ids). Pure -- unit-tested offline.
+def _assemble_clusters(raw_clusters, by_id, valid_sections, log):
+    """Resolve model output into clusters with embedded items and a validated
+    section. Drops clusters whose ids don't resolve, sorts by importance
+    (desc), returns (clusters, set_of_placed_ids). Pure -- unit-tested offline.
     """
     clusters = []
     placed: set[str] = set()
+    fallback = valid_sections[-1] if valid_sections else "Industry & Signal"
     for c in raw_clusters:
         ids = [i for i in c.get("item_ids", []) if i in by_id]
         if not ids:
@@ -78,8 +78,14 @@ def _assemble_clusters(raw_clusters, by_id, log):
                         f"'{c.get('topic')}'")
             continue
         placed.update(ids)
+        section = c.get("section")
+        if section not in valid_sections:
+            log.warning(f"[cluster] '{c.get('topic')}': unknown section "
+                        f"{section!r} -- assigning {fallback!r}")
+            section = fallback
         clusters.append({
             "topic": c.get("topic", "(untitled)"),
+            "section": section,
             "summary": c.get("summary", ""),
             "importance": c.get("importance", 0),
             "is_hype": bool(c.get("is_hype", False)),
@@ -115,11 +121,18 @@ def run(date, *, logger=None, dry_run=False, force=False, limit=None):
     items = _balance_sources(items, caps, log)
     log.info(f"[cluster] clustering {len(items)} extracted item(s)")
 
+    sections = load_config("sections.yaml").get("sections", [])
+    section_names = [s["name"] for s in sections]
+    sections_text = "\n".join(f"- {s['name']}: {s.get('blurb', '')}"
+                              for s in sections)
+
     by_id = {it.get("id"): it for it in items}
     llm = LLM("cluster", config=cfg, logger=log)
-    prompt = _load_prompt().replace(
-        "{{ITEMS_JSON}}",
-        json.dumps([_compact(it) for it in items], ensure_ascii=False, indent=2))
+    prompt = (_load_prompt()
+              .replace("{{SECTIONS}}", sections_text)
+              .replace("{{ITEMS_JSON}}",
+                       json.dumps([_compact(it) for it in items],
+                                  ensure_ascii=False, indent=2)))
 
     log.info(f"[cluster] calling {llm.describe()} ...")
     try:
@@ -133,12 +146,12 @@ def run(date, *, logger=None, dry_run=False, force=False, limit=None):
         log.error("[cluster] model returned no clusters")
         return None
 
-    clusters, placed = _assemble_clusters(raw_clusters, by_id, log)
+    clusters, placed = _assemble_clusters(raw_clusters, by_id, section_names, log)
     log.info(f"[cluster] {len(clusters)} cluster(s); {len(placed)} item(s) "
              f"placed, {len(by_id) - len(placed)} left out")
     for c in clusters:
         flag = " [hype]" if c["is_hype"] else ""
-        log.info(f"  ({c['importance']}) {c['topic']} -- "
+        log.info(f"  ({c['importance']}) [{c['section']}] {c['topic']} -- "
                  f"{len(c['items'])} item(s){flag}")
 
     payload = {

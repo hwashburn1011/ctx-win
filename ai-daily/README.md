@@ -1,7 +1,8 @@
 # ai-daily
 
-A local, free, open-source pipeline that produces one ~7-minute narrated video
-each day summarizing the most important AI news from the past 24 hours. Audio
+A local, free, open-source pipeline that produces one ~15-minute narrated
+video each day summarizing the most important AI news from the past 24 hours,
+organized into themed sections (Security, Development, New Tools, …). Audio
 narration plays over screen captures of the actual source material — Reddit
 threads, HN posts, blog posts, YouTube clips. No avatar, no talking head.
 
@@ -149,7 +150,8 @@ Everything tunable lives in `config/` — nothing source-related is hardcoded.
 
 - `config/channels.yaml` — YouTube channels (by `id:` or `@handle:`).
 - `config/subreddits.yaml` — subreddit list + score/comment thresholds.
-- `config/sources.yaml` — YouTube/HN/arXiv settings, RSS feeds.
+- `config/sources.yaml` — YouTube/HN/arXiv settings, and the blog/RSS feeds.
+- `config/sections.yaml` — the themed sections the digest is organized into.
 - `config/llm.yaml` — LLM backend, role→model map, extraction batch size.
 - `config/voice.yaml` — Kokoro voice, speed, model file paths.
 - `config/visuals.yaml` — frame size, screenshot timeout, clip length, card style.
@@ -194,6 +196,13 @@ them in `config/` if you disagree.
 - **Per-item extraction cache.** Each item's result is cached by id, so an
   interrupted or re-run extraction only pays for what is missing. `--force`
   bypasses it.
+- **Themed sections.** The digest is organized into the sections in
+  `config/sections.yaml` (Security, Development, New Tools, …). `cluster`
+  tags each story with a section; `synthesize` writes the ~15-minute script
+  section by section, opening each with an on-screen section card.
+- **Blog/RSS ingest.** `ingest/rss.py` follows the feeds in `sources.yaml`
+  (`rss.feeds`) — AI leaders and practitioners (Simon Willison, Geoffrey
+  Huntley, Karpathy, …). A feed that fails to load is logged and skipped.
 - **Editorial balance — practitioner over academic.** arXiv produces hundreds
   of papers a day and would otherwise swamp the digest. `cluster` caps items
   per source (`config/llm.yaml` → `cluster.max_per_source`, arXiv default 35),

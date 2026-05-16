@@ -85,3 +85,16 @@ def test_vtt_to_text_strips_tags_and_dedupes_rolling_captions():
 
 def test_vtt_to_text_empty():
     assert yt._vtt_to_text("WEBVTT\n\n") == ""
+
+
+def test_rss_entry_text_strips_html_and_collapses_whitespace():
+    from ingest import rss
+    entry = {"summary": "<p>Hello   <b>world</b></p>\n<a href='x'>link</a>"}
+    assert rss._entry_text(entry) == "Hello world link"
+
+
+def test_rss_entry_text_prefers_full_content_over_summary():
+    from ingest import rss
+    entry = {"summary": "short summary",
+             "content": [{"value": "<p>the full content</p>"}]}
+    assert rss._entry_text(entry) == "the full content"

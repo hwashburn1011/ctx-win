@@ -1,0 +1,18 @@
+# Thematic sections the digest is organised into. The clusterer assigns each
+# story (cluster) to exactly one section; the script presents the video
+# section by section, in the order listed here. Sections with no stories on a
+# given day are simply skipped.
+
+sections:
+  - name: Security
+    blurb: vulnerabilities, attacks, defenses, agent & model safety
+  - name: Development
+    blurb: coding agents, dev workflows, engineering practice & productivity
+  - name: New Tools & Releases
+    blurb: model releases, new tools, libraries, products, APIs
+  - name: Patterns & Principles
+    blurb: agentic patterns, architecture, techniques, mental models
+  - name: Research & Benchmarks
+    blurb: notable papers, benchmarks, capability findings
+  - name: Industry & Signal
+    blurb: company moves, funding, adoption, ecosystem shifts

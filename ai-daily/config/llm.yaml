@@ -21,8 +21,9 @@ cluster:
 
 claude_cli:                  # used when backend: claude-cli
   command: claude            # path/name of the Claude Code CLI on PATH
-  timeout_seconds: 240       # per-call timeout
-  max_budget_usd: 0.50       # per-call spend cap (safety)
+  timeout_seconds: 600       # per-call timeout (the ~15-min script is a large
+                             # generation -- give it room)
+  max_budget_usd: 1.00       # per-call spend cap (safety net)
 
 anthropic_sdk:               # used when backend: anthropic-sdk
   max_tokens: 4096           # reads ANTHROPIC_API_KEY from the environment

@@ -89,8 +89,12 @@ class LLM:
         cmd = cli.get("command", "claude")
         timeout = cli.get("timeout_seconds", 240)
         budget = cli.get("max_budget_usd")
+        # --tools "" disables all agent tools: these calls are pure text/JSON
+        # generation, so the model must not wander into tool use (which is
+        # slow, costly, and can trip the budget cap mid-generation).
         args = [cmd, "-p", "--model", str(self.model),
-                "--output-format", "json", "--no-session-persistence"]
+                "--output-format", "json", "--no-session-persistence",
+                "--tools", ""]
         if budget:
             args += ["--max-budget-usd", str(budget)]
         try:

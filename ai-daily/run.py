@@ -20,7 +20,7 @@ import traceback
 
 from common import (default_date, parse_date, raw_path, read_json,
                     setup_logging, wrap_raw, write_json)
-from ingest import arxiv, hackernews, reddit, youtube
+from ingest import arxiv, hackernews, reddit, rss, youtube
 from process import cluster as cluster_stage
 from process import extract as extract_stage
 from process import synthesize as synthesize_stage
@@ -38,6 +38,7 @@ INGEST_SOURCES = [
     ("reddit", reddit.fetch),
     ("hn", hackernews.fetch),
     ("arxiv", arxiv.fetch),
+    ("rss", rss.fetch),
 ]
 
 
@@ -64,31 +65,33 @@ def stage_ingest(date, log, dry_run, force):
         summary[src] = len(items)
     log.info("[ingest] summary: "
              + ", ".join(f"{k}={v}" for k, v in summary.items()))
-    return summary
+    return True  # ingest is resilient per-source; never halts the pipeline
 
 
+# Stages 2-7 each return their result, or None on failure. A None return
+# halts the run -- every downstream stage depends on the previous one's output.
 def stage_extract(date, log, dry_run, force):
-    extract_stage.run(date, logger=log, dry_run=dry_run, force=force)
+    return extract_stage.run(date, logger=log, dry_run=dry_run, force=force) is not None
 
 
 def stage_cluster(date, log, dry_run, force):
-    cluster_stage.run(date, logger=log, dry_run=dry_run, force=force)
+    return cluster_stage.run(date, logger=log, dry_run=dry_run, force=force) is not None
 
 
 def stage_synthesize(date, log, dry_run, force):
-    synthesize_stage.run(date, logger=log, dry_run=dry_run, force=force)
+    return synthesize_stage.run(date, logger=log, dry_run=dry_run, force=force) is not None
 
 
 def stage_voice(date, log, dry_run, force):
-    voice_stage.run(date, logger=log, dry_run=dry_run, force=force)
+    return voice_stage.run(date, logger=log, dry_run=dry_run, force=force) is not None
 
 
 def stage_visuals(date, log, dry_run, force):
-    visuals_stage.run(date, logger=log, dry_run=dry_run, force=force)
+    return visuals_stage.run(date, logger=log, dry_run=dry_run, force=force) is not None
 
 
 def stage_assemble(date, log, dry_run, force):
-    assemble_stage.run(date, logger=log, dry_run=dry_run, force=force)
+    return assemble_stage.run(date, logger=log, dry_run=dry_run, force=force) is not None
 
 
 STAGE_FNS = {"ingest": stage_ingest, "extract": stage_extract,
@@ -125,7 +128,11 @@ def main():
     log.info(f"=== ai-daily run | date={date} | stages={stages} | "
              f"dry_run={args.dry_run} force={args.force} ===")
     for stage in stages:
-        STAGE_FNS[stage](date, log, args.dry_run, args.force)
+        ok = STAGE_FNS[stage](date, log, args.dry_run, args.force)
+        if ok is False and not args.dry_run:
+            log.error(f"=== stage '{stage}' failed -- halting; downstream "
+                      "stages depend on its output ===")
+            sys.exit(1)
     log.info("=== run complete ===")
 
 
