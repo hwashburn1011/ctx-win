@@ -1,0 +1,48 @@
+# Configuration for the non-Reddit ingest sources.
+
+youtube:
+  max_video_minutes: 60          # skip uploads longer than this
+  whisper_model: base            # faster-whisper size for caption-less videos
+                                 # (tiny | base | small | medium)
+  languages: [en, en-US, en-GB]  # caption languages to try, in order
+  proxy: ""                      # optional. YouTube blocks the transcript
+                                 # endpoint from many datacenter IPs; route
+                                 # transcript + audio-fallback requests
+                                 # through a (residential) proxy to avoid it.
+                                 # Leave blank to fetch directly. Example:
+                                 #   proxy: "http://user:pass@host:port"
+
+hackernews:
+  min_points: 100                # Algolia `points>` filter
+  max_comments: 15               # top-level comments fetched per story
+  keywords:                      # whole-word match against story title + url
+    - AI
+    - LLM
+    - Claude
+    - GPT
+    - ChatGPT
+    - Anthropic
+    - OpenAI
+    - Gemini
+    - Llama
+    - Grok
+    - Mistral
+    - agent
+    - agentic
+    - model
+    - machine learning
+    - diffusion
+    - transformer
+
+arxiv:
+  categories: [cs.AI, cs.CL, cs.LG]
+  page_size: 100                 # results per API request
+  max_pages: 20                  # safety cap (page_size * max_pages entries)
+
+# Plain blog RSS/Atom feeds. RESERVED -- there is no dedicated rss ingest
+# module in the Stage-1 layout (feedparser is currently used for YouTube and
+# arXiv feeds only). Listed here so the wiring is obvious when we add it.
+rss:
+  feeds: []
+    # - https://openai.com/blog/rss.xml
+    # - https://huggingface.co/blog/feed.xml

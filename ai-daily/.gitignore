@@ -1,0 +1,14 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Pipeline artifacts -- regenerated every run.
+data/raw/
+data/processed/
+data/output/
+logs/
+
+# Large model files -- downloaded once, see README.
+models/

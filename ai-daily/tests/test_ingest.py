@@ -1,0 +1,70 @@
+"""Offline unit tests for ingest helper logic -- no network, fast."""
+import time
+
+import common
+from ingest import arxiv as arxiv_mod
+from ingest import hackernews as hn
+from ingest import youtube as yt
+
+KEYWORDS = ["AI", "LLM", "GPT", "machine learning", "agent"]
+
+
+def test_hn_matches_whole_word():
+    assert hn._matches("New AI note takers blow facts", None, KEYWORDS) is True
+    assert hn._matches("GPT-5 released today", None, KEYWORDS) is True
+    assert hn._matches("Building an agent framework", None, KEYWORDS) is True
+
+
+def test_hn_matches_rejects_substring_false_positives():
+    # the keyword "AI" must not match inside "Air" / "Chairs"
+    assert hn._matches("MacBook Air review", None, KEYWORDS) is False
+    assert hn._matches("Chairs and tables", None, KEYWORDS) is False
+
+
+def test_hn_matches_multiword_and_case_insensitive():
+    assert hn._matches("A Machine Learning primer", None, KEYWORDS) is True
+    assert hn._matches(None, "https://example.com/llm-guide", KEYWORDS) is True
+
+
+def test_hn_matches_none_safe():
+    assert hn._matches(None, None, KEYWORDS) is False
+
+
+def test_arxiv_entry_dt_parses_struct_time():
+    entry = {"published_parsed": time.strptime("2026-05-14T12:30:00",
+                                               "%Y-%m-%dT%H:%M:%S")}
+    dt = arxiv_mod._entry_dt(entry)
+    assert (dt.year, dt.month, dt.day) == (2026, 5, 14)
+    assert dt.tzinfo is not None                       # always tz-aware (UTC)
+
+
+def test_arxiv_entry_dt_missing_returns_none():
+    assert arxiv_mod._entry_dt({}) is None
+
+
+def test_youtube_view_count_parsing():
+    assert yt._view_count({"media_statistics": {"views": "29012"}}) == 29012
+    assert yt._view_count({}) is None
+    assert yt._view_count({"media_statistics": {"views": None}}) is None
+
+
+def test_youtube_entry_dt():
+    entry = {"published_parsed": time.strptime("2026-05-14T00:00:00",
+                                               "%Y-%m-%dT%H:%M:%S")}
+    assert yt._entry_dt(entry).day == 14
+    assert yt._entry_dt({}) is None
+
+
+def test_configs_load_and_have_expected_shape():
+    chan = common.load_config("channels.yaml")
+    assert isinstance(chan.get("channels"), list) and chan["channels"]
+
+    subs = common.load_config("subreddits.yaml")
+    assert isinstance(subs.get("subreddits"), list) and subs["subreddits"]
+    assert isinstance(subs.get("min_score"), int)
+    assert isinstance(subs.get("min_comments"), int)
+
+    src = common.load_config("sources.yaml")
+    for key in ("youtube", "hackernews", "arxiv"):
+        assert key in src, f"sources.yaml missing '{key}' section"
+    assert isinstance(src["hackernews"].get("keywords"), list)

@@ -1,0 +1,39 @@
+You are organizing a day's worth of extracted AI-news items into a small set
+of coherent story clusters for a developer-focused video digest.
+
+You receive a JSON array of extracted items, each with: id, title, topics,
+entities, essence, claims, novelty, category, developer_relevance. Group items
+that concern the SAME underlying story or a tightly related theme. A model
+release and the community reaction to it belong in one cluster; two unrelated
+papers do not.
+
+Return ONLY a JSON object -- no prose, no markdown fences:
+
+{
+  "clusters": [
+    {
+      "topic": "<short human-readable cluster name>",
+      "summary": "<1-2 sentences on the through-line of this cluster>",
+      "item_ids": ["<ids of member items>"],
+      "importance": <integer 1-10>,
+      "is_hype": <true | false>
+    }
+  ]
+}
+
+Scoring importance (1-10), weigh in roughly this order:
+1. developer relevance and novelty of the member items,
+2. number of independent, corroborating sources in the cluster,
+3. magnitude -- a frontier model release or a load-bearing new tool outranks a
+   blog opinion or an incremental paper.
+
+Set is_hype=true for clusters that are mostly noise or speculation; the script
+stage will drop them or mention them only briefly.
+
+Aim for 4-8 clusters. Do NOT force every item into a cluster -- minor or
+duplicate items may be left out (simply omit their ids). Order the clusters by
+importance, highest first.
+
+The extracted items follow as JSON:
+
+{{ITEMS_JSON}}
