@@ -1,0 +1,19 @@
+# Subreddits to ingest, plus the filtering thresholds applied to each post.
+# Posts must clear BOTH thresholds and fall inside the target UTC day.
+
+subreddits:
+  - LocalLLaMA
+  - MachineLearning
+  - singularity
+  - OpenAI
+  - ClaudeAI
+  - artificial          # spec said "ArtificialIntelligence", but that name
+                        # 404s on Reddit's JSON API; r/artificial is the
+                        # active general-AI subreddit
+  # - LLMDevs
+  # - StableDiffusion
+  # - LocalLLM
+
+min_score: 100        # minimum upvote score
+min_comments: 50      # minimum comment count
+top_comments: 20      # number of top-level comments to fetch per kept post

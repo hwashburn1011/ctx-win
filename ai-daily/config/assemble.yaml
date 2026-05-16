@@ -1,0 +1,23 @@
+# Stage 7 -- final video assembly (ffmpeg).
+
+fps: 30
+intro_seconds: 1.0
+outro_seconds: 1.0
+
+video:
+  codec: libx264
+  preset: medium
+  crf: 20
+audio:
+  codec: aac
+  bitrate: 192k
+
+intro_title: "AI Daily"      # intro/outro cards show this + the digest date
+
+lower_third:                 # source attribution, bottom-left
+  enabled: true
+  height: 56
+  font_size: 28
+  opacity: 0.55              # background box opacity (0-1)
+  text_color: "#ffffff"
+  margin: 40

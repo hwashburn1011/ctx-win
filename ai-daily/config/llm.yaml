@@ -1,0 +1,22 @@
+# LLM backend configuration for Stages 2-4 (extract / cluster / synthesize).
+# Stages ask for a role; this maps the role to a model, so swapping models is
+# a one-line change.
+
+backend: claude-cli          # claude-cli (no API key, default) | anthropic-sdk
+
+models:                      # role -> model. The CLI accepts aliases
+  extract: haiku             # (haiku/sonnet/opus) or full ids (claude-haiku-4-5).
+  cluster: sonnet
+  synthesize: sonnet
+
+extract:
+  batch_size: 12             # raw items sent per LLM call. Batching amortizes
+                             # the CLI's fixed prompt overhead -- keep it > 1.
+
+claude_cli:                  # used when backend: claude-cli
+  command: claude            # path/name of the Claude Code CLI on PATH
+  timeout_seconds: 240       # per-call timeout
+  max_budget_usd: 0.50       # per-call spend cap (safety)
+
+anthropic_sdk:               # used when backend: anthropic-sdk
+  max_tokens: 4096           # reads ANTHROPIC_API_KEY from the environment

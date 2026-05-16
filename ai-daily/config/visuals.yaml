@@ -1,0 +1,19 @@
+# Stage 6 -- per-segment visuals.
+
+width: 1920
+height: 1080
+
+screenshot:
+  timeout_seconds: 30
+  wait_until: load           # load | domcontentloaded | networkidle
+  settle_ms: 1200            # extra wait after load for late content
+  reddit_use_old: true       # screenshot old.reddit.com -- cleaner, comments inline
+
+clip:
+  max_seconds: 15            # hard cap on YouTube B-roll clip length
+
+text_card:
+  background: "#0d1117"
+  foreground: "#e6edf3"
+  accent: "#58a6ff"
+  font: ""                   # path to a .ttf; blank = auto-detect a system font

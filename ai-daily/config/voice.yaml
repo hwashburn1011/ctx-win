@@ -1,0 +1,17 @@
+# Stage 5 -- narration voice (Kokoro TTS, local, ONNX runtime).
+
+engine: kokoro-onnx
+voice: af_heart            # clear American English, neutral tone.
+                           # Other options: am_michael, af_bella, af_sarah,
+                           # am_adam, af_nicole (see the Kokoro voices list).
+speed: 1.15                # tunes final length: Kokoro at 1.0 speaks ~126
+                           # wpm (a 1050-word script -> ~8.3 min); 1.15 lands
+                           # a ~7-minute digest. 0.8-1.3 is a reasonable range.
+lang: en-us
+segment_gap_seconds: 0.4   # silence inserted between segments
+
+model:                     # Kokoro ONNX model files. Download once from
+                           # https://github.com/thewh1teagle/kokoro-onnx/releases
+                           # (paths are relative to the project root).
+  onnx: models/kokoro-v1.0.onnx
+  voices: models/voices-v1.0.bin

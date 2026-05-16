@@ -1,0 +1,27 @@
+# YouTube channels to ingest.
+#
+# Each entry is ONE of:
+#   - id: UC...          canonical channel ID (preferred -- no lookup needed)
+#   - handle: "@name"    @handle; the channelId is resolved at runtime by
+#                        scraping the channel page
+# An optional `name:` is cosmetic (shown in logs only).
+#
+# Uploads are discovered via each channel's public RSS feed
+# (https://www.youtube.com/feeds/videos.xml?channel_id=...) -- no API key.
+#
+# NOTE: the three IDs below are verified. The @handle entries are best-effort;
+# verify they resolve to the channel you expect (a wrong handle just logs a
+# warning and is skipped -- it will not break the run).
+
+channels:
+  - id: UCbfYPyITQ-7l4upoX8nvctg   # Two Minute Papers
+  - id: UCZHmQk67mSJgfCCTn7xBfew   # Yannic Kilcher
+  - id: UCNJ1Ymd5yFuUPtn21xtRbbw   # AI Explained
+  - handle: "@matthew_berman"      # Matthew Berman -- verify
+  - handle: "@WesRoth"             # Wes Roth -- verify
+  - handle: "@bycloud"             # bycloud -- verify
+  # --- add more below; aim for ~10 total --------------------------------
+  # - handle: "@sentdex"
+  # - handle: "@1littlecoder"
+  # - handle: "@aiadvantage"
+  # - id: UC...
