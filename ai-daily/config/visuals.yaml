@@ -6,7 +6,9 @@ height: 1080
 screenshot:
   timeout_seconds: 30
   wait_until: load           # load | domcontentloaded | networkidle
-  settle_ms: 1200            # extra wait after load for late content
+  settle_ms: 2000            # extra wait after load for late content. Blank /
+                             # half-loaded screenshots are detected and dropped
+                             # (replaced with a text card) regardless.
   reddit_use_old: true       # screenshot old.reddit.com -- cleaner, comments inline
 
 clip:

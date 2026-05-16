@@ -57,6 +57,14 @@ def test_keep_is_case_insensitive():
                            "novelty": "HIGH"}) is False
 
 
+def test_keep_drops_low_novelty_opinion():
+    # anecdotes / hot takes are opinion -- kept only if genuinely high-novelty
+    base = {"category": "opinion", "developer_relevance": "high"}
+    assert extract._keep({**base, "novelty": "low"}) is False
+    assert extract._keep({**base, "novelty": "medium"}) is False
+    assert extract._keep({**base, "novelty": "high"}) is True
+
+
 # --- _compact --------------------------------------------------------------
 def test_compact_reddit_truncates_and_keeps_comments():
     item = {"id": "reddit_x", "source": "reddit", "title": "T", "url": "u",

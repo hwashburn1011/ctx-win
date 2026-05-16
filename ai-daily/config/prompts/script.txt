@@ -12,6 +12,10 @@ Write a script that:
 - Opens with a 2-sentence cold open naming the single most important thing of
   the day. No "welcome back", no throat-clearing.
 - Covers 4-7 clusters in descending order of importance.
+- Leads with releases, tools, and what the community and top AI creators are
+  actually discussing. Research papers are supporting evidence, not the main
+  course -- the script must not read like a paper review.
+- Skips anecdotal drama and unverified single-user reports entirely.
 - For each cluster, explains what is new, why it matters to someone building
   with LLMs, and -- when relevant -- whether it is substantive or overhyped.
   Use concrete numbers, benchmark names, and version strings. Do not pad.

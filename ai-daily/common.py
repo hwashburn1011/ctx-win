@@ -70,6 +70,8 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
 
     for noisy in ("urllib3", "requests", "yt_dlp", "faster_whisper"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
+    # phonemizer emits a noisy per-line "words count mismatch" warning
+    logging.getLogger("phonemizer").setLevel(logging.ERROR)
 
     return logging.getLogger("ai-daily")
 

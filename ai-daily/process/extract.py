@@ -64,11 +64,14 @@ def _compact(item: dict) -> dict:
 
 
 def _keep(ext: dict) -> bool:
-    """Spec filter: drop hype; drop low developer-relevance unless high novelty."""
+    """Relevance filter: drop hype, low-novelty opinion (anecdotes / hot takes),
+    and low developer-relevance items -- unless they are genuinely high-novelty."""
     cat = (ext.get("category") or "").lower()
     rel = (ext.get("developer_relevance") or "").lower()
     nov = (ext.get("novelty") or "").lower()
     if cat == "hype":
+        return False
+    if cat == "opinion" and nov != "high":
         return False
     if rel == "low" and nov != "high":
         return False
