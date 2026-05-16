@@ -20,8 +20,9 @@ channels:
   - handle: "@matthew_berman"      # Matthew Berman -- verify
   - handle: "@WesRoth"             # Wes Roth -- verify
   - handle: "@bycloud"             # bycloud -- verify
-  # --- add more below; aim for ~10 total --------------------------------
+  - handle: "@samwitteveenai"      # Sam Witteveen -- verify
+  - handle: "@1littlecoder"        # 1littlecoder -- verify
+  - handle: "@TheAIAdvantage"      # The AI Advantage -- verify
+  # --- add more below ---------------------------------------------------
   # - handle: "@sentdex"
-  # - handle: "@1littlecoder"
-  # - handle: "@aiadvantage"
   # - id: UC...

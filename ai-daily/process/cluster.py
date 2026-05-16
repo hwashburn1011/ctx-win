@@ -35,6 +35,34 @@ def _compact(ext: dict) -> dict:
     return {k: ext.get(k) for k in CLUSTER_FIELDS}
 
 
+_RANK = {"high": 3, "medium": 2, "low": 1}
+
+
+def _quality(item: dict) -> int:
+    """Crude quality score from novelty + developer_relevance, for ranking."""
+    return (_RANK.get((item.get("novelty") or "").lower(), 0)
+            + _RANK.get((item.get("developer_relevance") or "").lower(), 0))
+
+
+def _balance_sources(items, caps, log):
+    """Cap over-represented sources (keeping their highest-quality items) so
+    one source -- typically arXiv -- doesn't numerically dominate the digest."""
+    if not caps:
+        return items
+    from collections import defaultdict
+    grouped = defaultdict(list)
+    for it in items:
+        grouped[it.get("source")].append(it)
+    kept = []
+    for src, group in grouped.items():
+        cap = caps.get(src)
+        if cap and len(group) > cap:
+            group = sorted(group, key=_quality, reverse=True)[:cap]
+            log.info(f"[cluster] capped {src}: kept top {cap} by quality")
+        kept.extend(group)
+    return kept
+
+
 def _assemble_clusters(raw_clusters, by_id, log):
     """Resolve model output into clusters with embedded items.
 
@@ -81,10 +109,13 @@ def run(date, *, logger=None, dry_run=False, force=False, limit=None):
     if not items:
         log.warning("[cluster] no extracted items to cluster")
         return None
+
+    cfg = load_config("llm.yaml")
+    caps = (cfg.get("cluster") or {}).get("max_per_source") or {}
+    items = _balance_sources(items, caps, log)
     log.info(f"[cluster] clustering {len(items)} extracted item(s)")
 
     by_id = {it.get("id"): it for it in items}
-    cfg = load_config("llm.yaml")
     llm = LLM("cluster", config=cfg, logger=log)
     prompt = _load_prompt().replace(
         "{{ITEMS_JSON}}",

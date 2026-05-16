@@ -37,6 +37,12 @@ Guidance:
   speculation presented as news.
 - developer_relevance=high means it changes what the reader could build, or how
   they would build it, in the near term.
+- Reddit and Hacker News items that are single-user anecdotes ("Claude did X
+  to me"), personal complaints, drama, outage gripes, hearsay, or speculation
+  are noise, not signal -- mark them novelty=low and category=opinion (or hype
+  if they are engagement-bait). Reserve medium/high novelty for substantive
+  technical content: benchmarks, reproducible findings, releases, how-it-works
+  breakdowns, and informed debate.
 - claims must be atomic and verifiable; drop vague enthusiasm and adjectives.
 - essence should say what changed, not what the topic is "about".
 - A YouTube item whose transcript is unavailable must be judged on its title

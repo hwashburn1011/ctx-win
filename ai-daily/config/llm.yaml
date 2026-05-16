@@ -13,6 +13,12 @@ extract:
   batch_size: 12             # raw items sent per LLM call. Batching amortizes
                              # the CLI's fixed prompt overhead -- keep it > 1.
 
+cluster:
+  max_per_source:            # cap items per source fed to the clusterer so a
+    arxiv: 35                # high-volume source (arXiv) can't crowd out the
+                             # YouTube / Reddit / HN signal. Omit a source for
+                             # no cap.
+
 claude_cli:                  # used when backend: claude-cli
   command: claude            # path/name of the Claude Code CLI on PATH
   timeout_seconds: 240       # per-call timeout

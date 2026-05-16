@@ -43,8 +43,7 @@ pip install -r requirements.txt
 
 # OR a lighter Stage-1-only install:
 pip install requests==2.32.3 feedparser==6.0.11 PyYAML==6.0.2 `
-            python-dotenv==1.0.1 rich==13.9.4 `
-            youtube-transcript-api==0.6.3 yt-dlp==2025.2.19
+            python-dotenv==1.0.1 rich==13.9.4 yt-dlp==2025.2.19
 
 cp .env.example .env                  # only needed for Stages 2+
 ```
@@ -178,11 +177,13 @@ them in `config/` if you disagree.
   (or fetch-blocked) YouTube videos. If it (or yt-dlp) is not installed, the
   video is still ingested with an empty transcript and a `transcript_status`
   flag (`captions` / `no_captions` / `fetch_error` / `transcription_*`).
-- **YouTube transcript IP blocks.** YouTube blocks the transcript endpoint
-  from many datacenter IPs (you'll see `transcript_status: fetch_error`).
-  Running locally on a residential connection usually just works; otherwise
-  set `youtube.proxy` in `config/sources.yaml` to route transcript and
-  audio-fallback requests through a proxy.
+- **YouTube transcripts via yt-dlp.** Transcripts are fetched with yt-dlp's
+  caption extraction, not the lightweight transcript API — yt-dlp speaks to
+  YouTube as a player client and, via `youtube.player_clients` in
+  `config/sources.yaml` (default `web_safari`, `android_vr`), reaches it even
+  from IPs where the transcript API is bot-blocked. A caption-less video falls
+  back to yt-dlp audio + faster-whisper. If yt-dlp itself is blocked, set
+  `youtube.proxy`.
 - **arXiv** is filtered by `submittedDate`; arXiv does not announce on
   weekends, so a weekend `--date` may legitimately yield zero papers.
 - **Extraction is batched.** The spec says "for each raw item, call Claude
@@ -193,6 +194,15 @@ them in `config/` if you disagree.
 - **Per-item extraction cache.** Each item's result is cached by id, so an
   interrupted or re-run extraction only pays for what is missing. `--force`
   bypasses it.
+- **Editorial balance — practitioner over academic.** arXiv produces hundreds
+  of papers a day and would otherwise swamp the digest. `cluster` caps items
+  per source (`config/llm.yaml` → `cluster.max_per_source`, arXiv default 35),
+  and the extract/cluster/script prompts steer toward releases, what AI
+  creators cover, and substantive community discussion — research is supporting
+  context. Single-user anecdotes, complaints and hearsay are filtered out.
+- **Screenshot quality gate.** A screenshot that comes back blank or
+  half-loaded (one colour dominating the frame) is detected and replaced with a
+  text card rather than shipped into the video.
 - **`common.py`** and **`llm.py`** are small, deliberate additions to the
   spec's layout. Every stage needs the same logging/paths/IO helpers
   (`common.py`); `llm.py` is the "thin wrapper so models can be swapped" the

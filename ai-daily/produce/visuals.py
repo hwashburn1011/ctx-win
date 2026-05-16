@@ -123,20 +123,45 @@ def _text_card(out_path, title: str, subtitle: str, cfg: dict, w: int, h: int):
     img.save(str(out_path))
 
 
+def _looks_unloaded(png_path) -> bool:
+    """True if a screenshot looks blank or stuck -- a single colour dominates
+    the frame, which a real, fully-rendered page never does."""
+    from PIL import Image
+    img = Image.open(png_path).convert("RGB").resize((160, 90))
+    img = img.point(lambda v: v & 0xF0)            # quantize to 16 levels/channel
+    colors = img.getcolors(maxcolors=160 * 90) or []
+    return bool(colors) and max(c for c, _ in colors) / (160 * 90) >= 0.96
+
+
 def _screenshot(page, url: str, out_path, sc_cfg: dict, log) -> bool:
     target = url
     if sc_cfg.get("reddit_use_old", True) and "reddit.com" in target:
         target = re.sub(r"https?://(www\.)?reddit\.com",
                         "https://old.reddit.com", target)
+    settle = sc_cfg.get("settle_ms", 2000)
     try:
         page.goto(target, wait_until=sc_cfg.get("wait_until", "load"),
                   timeout=sc_cfg.get("timeout_seconds", 30) * 1000)
-        page.wait_for_timeout(sc_cfg.get("settle_ms", 1200))
-        page.screenshot(path=str(out_path))   # viewport shot == width x height
-        return True
     except Exception as e:  # noqa: BLE001
         log.warning(f"[visuals] screenshot failed for {target}: {e}")
         return False
+    # Capture; if it looks blank -- typically a JS-heavy page that has not
+    # hydrated yet -- wait longer and try once more before giving up.
+    for attempt, wait in enumerate((settle, settle * 2 + 3000), start=1):
+        try:
+            page.wait_for_timeout(wait)
+            page.screenshot(path=str(out_path))   # viewport shot == width x height
+        except Exception as e:  # noqa: BLE001
+            log.warning(f"[visuals] screenshot failed for {target}: {e}")
+            return False
+        if not _looks_unloaded(out_path):
+            return True
+        if attempt == 1:
+            log.info(f"[visuals] {target}: capture looked blank -- "
+                     "waiting longer and retrying")
+    log.warning(f"[visuals] {target}: still blank/unloaded after retry "
+                "-- falling back to a text card")
+    return False
 
 
 def _youtube_clip(url, start, end, out_path, max_seconds, w, h, log) -> bool:

@@ -7,6 +7,15 @@ that concern the SAME underlying story or a tightly related theme. A model
 release and the community reaction to it belong in one cluster; two unrelated
 papers do not.
 
+Editorial priorities -- this digest is for a working practitioner, not an
+academic. Favor, in order: notable model / tool / product releases; what the
+top AI YouTubers and creators are covering; and substantive community
+discussion (real benchmarks, reproducible findings, informed debate). Treat
+arXiv research as supporting context -- include at most two research-centric
+clusters, and only for results that actually change practice. Exclude
+single-user anecdotes, personal complaints, drama, and hearsay entirely: do
+not put them in any cluster.
+
 Return ONLY a JSON object -- no prose, no markdown fences:
 
 {

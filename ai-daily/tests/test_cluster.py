@@ -41,3 +41,29 @@ def test_assemble_clusters_ignores_unknown_ids_within_a_cluster():
     assert len(clusters) == 1
     assert clusters[0]["item_ids"] == ["a"]
     assert placed == {"a"}
+
+
+def test_quality_scores_novelty_and_relevance():
+    assert cluster._quality({"novelty": "high", "developer_relevance": "high"}) == 6
+    assert cluster._quality({"novelty": "low", "developer_relevance": "medium"}) == 3
+    assert cluster._quality({}) == 0
+
+
+def test_balance_sources_caps_and_keeps_best():
+    items = [{"id": f"a{i}", "source": "arxiv", "novelty": "low",
+              "developer_relevance": "low"} for i in range(8)]
+    items.append({"id": "a-top", "source": "arxiv", "novelty": "high",
+                  "developer_relevance": "high"})
+    items += [{"id": f"r{i}", "source": "reddit"} for i in range(4)]
+
+    out = cluster._balance_sources(items, {"arxiv": 3}, get_logger())
+    arxiv = [i for i in out if i["source"] == "arxiv"]
+    reddit = [i for i in out if i["source"] == "reddit"]
+    assert len(arxiv) == 3                          # capped
+    assert any(i["id"] == "a-top" for i in arxiv)   # highest-quality survives
+    assert len(reddit) == 4                         # uncapped source untouched
+
+
+def test_balance_sources_no_caps_is_passthrough():
+    items = [{"id": "x", "source": "arxiv"}, {"id": "y", "source": "hn"}]
+    assert cluster._balance_sources(items, {}, get_logger()) == items

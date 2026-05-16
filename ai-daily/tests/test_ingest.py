@@ -68,3 +68,20 @@ def test_configs_load_and_have_expected_shape():
     for key in ("youtube", "hackernews", "arxiv"):
         assert key in src, f"sources.yaml missing '{key}' section"
     assert isinstance(src["hackernews"].get("keywords"), list)
+
+
+def test_vtt_to_text_strips_tags_and_dedupes_rolling_captions():
+    vtt = (
+        "WEBVTT\nKind: captions\nLanguage: en\n\n"
+        "00:00:00.080 --> 00:00:02.710 align:start position:0%\n"
+        "This<00:00:00.320><c> is</c><00:00:00.640><c> a test</c>\n\n"
+        "00:00:02.710 --> 00:00:02.720\n"
+        "This is a test\n\n"                       # rolling repeat -- dropped
+        "00:00:02.720 --> 00:00:05.000\n"
+        "second line &amp; more\n"
+    )
+    assert yt._vtt_to_text(vtt) == "This is a test second line & more"
+
+
+def test_vtt_to_text_empty():
+    assert yt._vtt_to_text("WEBVTT\n\n") == ""

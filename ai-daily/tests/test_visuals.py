@@ -46,3 +46,22 @@ def test_wrap_breaks_long_text():
     assert len(lines) > 1
     assert all(len(ln) <= 12 for ln in lines)
     assert " ".join(lines).split() == ["one", "two", "three", "four", "five"]
+
+
+def test_looks_unloaded_flags_blank_page(tmp_path):
+    from PIL import Image
+    p = tmp_path / "blank.png"
+    Image.new("RGB", (480, 270), (255, 255, 255)).save(p)
+    assert visuals._looks_unloaded(p) is True
+
+
+def test_looks_unloaded_passes_a_varied_page(tmp_path):
+    import random
+    from PIL import Image
+    random.seed(1)
+    img = Image.new("RGB", (480, 270))
+    img.putdata([(random.randrange(256), random.randrange(256),
+                  random.randrange(256)) for _ in range(480 * 270)])
+    p = tmp_path / "varied.png"
+    img.save(p)
+    assert visuals._looks_unloaded(p) is False

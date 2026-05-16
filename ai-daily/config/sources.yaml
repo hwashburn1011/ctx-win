@@ -4,11 +4,14 @@ youtube:
   max_video_minutes: 60          # skip uploads longer than this
   whisper_model: base            # faster-whisper size for caption-less videos
                                  # (tiny | base | small | medium)
-  languages: [en, en-US, en-GB]  # caption languages to try, in order
-  proxy: ""                      # optional. YouTube blocks the transcript
-                                 # endpoint from many datacenter IPs; route
-                                 # transcript + audio-fallback requests
-                                 # through a (residential) proxy to avoid it.
+  languages: ["en.*"]            # caption language patterns for yt-dlp
+  player_clients: [web_safari, android_vr]
+                                 # yt-dlp YouTube player clients to try, in
+                                 # order. These reach YouTube where the default
+                                 # `web` client is bot-blocked (datacenter /
+                                 # shared IPs). Others: tv, ios, mweb.
+  proxy: ""                      # optional. If yt-dlp itself is blocked, route
+                                 # its requests through a (residential) proxy.
                                  # Leave blank to fetch directly. Example:
                                  #   proxy: "http://user:pass@host:port"
 
