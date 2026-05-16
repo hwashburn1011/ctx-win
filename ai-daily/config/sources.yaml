@@ -42,10 +42,16 @@ arxiv:
   page_size: 100                 # results per API request
   max_pages: 20                  # safety cap (page_size * max_pages entries)
 
-# Plain blog RSS/Atom feeds. RESERVED -- there is no dedicated rss ingest
-# module in the Stage-1 layout (feedparser is currently used for YouTube and
-# arXiv feeds only). Listed here so the wiring is obvious when we add it.
+# Blog / RSS feeds -- AI leaders and practitioners. Ingested by ingest/rss.py.
+# A feed that fails to load is logged and skipped.
 rss:
-  feeds: []
-    # - https://openai.com/blog/rss.xml
-    # - https://huggingface.co/blog/feed.xml
+  feeds:
+    - name: Simon Willison
+      url: https://simonwillison.net/atom/everything/
+    - name: Geoffrey Huntley
+      url: https://ghuntley.com/rss/
+    - name: Andrej Karpathy
+      url: https://karpathy.github.io/feed.xml
+    - name: OpenAI
+      url: https://openai.com/blog/rss.xml
+    # Steve Yegge has no verified current feed -- add here if you have one.

@@ -282,11 +282,11 @@ def run(date, *, logger=None, dry_run=False, force=False, limit=None):
                                    vis.get("clip_end"), visuals_dir / fname,
                                    max_clip, clip_clients, w, h, log)
                 kind = "youtube_clip"
-            elif cue == "text_card":
+            elif cue in ("text_card", "section_card"):
                 fname = f"segment_{i:03d}.png"
                 _text_card(visuals_dir / fname, _card_title(seg),
                            _source_label(seg), cfg, w, h)
-                ok, kind = True, "text_card"
+                ok, kind = True, cue
 
             if not ok:   # universal fallback -- a card always succeeds
                 fname = f"segment_{i:03d}.png"

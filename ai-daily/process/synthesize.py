@@ -65,14 +65,28 @@ def run(date, *, logger=None, dry_run=False, force=False):
     if not clusters:
         log.warning("[synthesize] no clusters to synthesize")
         return None
-    log.info(f"[synthesize] writing a script from {len(clusters)} cluster(s)")
+
+    # group clusters into sections, in the configured section order
+    sections = load_config("sections.yaml").get("sections", [])
+    known = {s["name"] for s in sections}
+    grouped = []
+    for sec in sections:
+        members = sorted((c for c in clusters if c.get("section") == sec["name"]),
+                         key=lambda c: c.get("importance", 0), reverse=True)
+        if members:
+            grouped.append({"section": sec["name"], "blurb": sec.get("blurb", ""),
+                            "clusters": [_compact_cluster(c) for c in members]})
+    orphans = [c for c in clusters if c.get("section") not in known]
+    if orphans and grouped:
+        grouped[-1]["clusters"].extend(_compact_cluster(c) for c in orphans)
+    log.info(f"[synthesize] {len(clusters)} cluster(s) across "
+             f"{len(grouped)} section(s)")
 
     cfg = load_config("llm.yaml")
     llm = LLM("synthesize", config=cfg, logger=log)
     prompt = _load_prompt().replace(
-        "{{CLUSTERS_JSON}}",
-        json.dumps([_compact_cluster(c) for c in clusters],
-                   ensure_ascii=False, indent=2))
+        "{{SECTIONS_JSON}}",
+        json.dumps(grouped, ensure_ascii=False, indent=2))
 
     log.info(f"[synthesize] calling {llm.describe()} ...")
     try:
@@ -93,9 +107,9 @@ def run(date, *, logger=None, dry_run=False, force=False):
 
     log.info(f"[synthesize] {len(segments)} segment(s), {words} words "
              f"(~{words / WORDS_PER_MINUTE:.1f} min spoken)")
-    if not 800 <= words <= 1300:
+    if not 1700 <= words <= 2700:
         log.warning(f"[synthesize] word count {words} is well outside the "
-                    "900-1100 target -- consider re-running with --force")
+                    "1900-2300 (~15 min) target -- consider re-running")
 
     if write_json(out_path, script, dry_run=dry_run, logger=log):
         log.info(f"[synthesize] wrote script -> {out_path}")

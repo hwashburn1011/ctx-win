@@ -14,30 +14,45 @@ def test_compact_picks_only_cluster_fields():
     assert set(c) == set(cluster.CLUSTER_FIELDS)
 
 
+SECTIONS = ["Security", "Development", "Industry & Signal"]
+
+
 def test_assemble_clusters_resolves_sorts_and_drops_empty():
     by_id = {"a": {"id": "a", "title": "A"},
              "b": {"id": "b", "title": "B"},
              "c": {"id": "c", "title": "C"}}
     raw = [
-        {"topic": "low", "item_ids": ["a"], "importance": 3},
-        {"topic": "ghost", "item_ids": ["missing"], "importance": 9},
-        {"topic": "high", "item_ids": ["b", "c"], "importance": 8,
-         "is_hype": True},
+        {"topic": "low", "section": "Development", "item_ids": ["a"],
+         "importance": 3},
+        {"topic": "ghost", "section": "Security", "item_ids": ["missing"],
+         "importance": 9},
+        {"topic": "high", "section": "Security", "item_ids": ["b", "c"],
+         "importance": 8, "is_hype": True},
     ]
-    clusters, placed = cluster._assemble_clusters(raw, by_id, get_logger())
+    clusters, placed = cluster._assemble_clusters(raw, by_id, SECTIONS,
+                                                  get_logger())
 
     # "ghost" dropped (no resolvable ids); rest sorted by importance desc
     assert [c["topic"] for c in clusters] == ["high", "low"]
+    assert clusters[0]["section"] == "Security"
     assert clusters[0]["is_hype"] is True
     assert [it["title"] for it in clusters[0]["items"]] == ["B", "C"]
     assert placed == {"a", "b", "c"}
 
 
+def test_assemble_clusters_falls_back_on_unknown_section():
+    by_id = {"a": {"id": "a", "title": "A"}}
+    clusters, _ = cluster._assemble_clusters(
+        [{"topic": "x", "section": "Nonsense", "item_ids": ["a"],
+          "importance": 5}], by_id, SECTIONS, get_logger())
+    assert clusters[0]["section"] == "Industry & Signal"   # last = fallback
+
+
 def test_assemble_clusters_ignores_unknown_ids_within_a_cluster():
     by_id = {"a": {"id": "a", "title": "A"}}
     clusters, placed = cluster._assemble_clusters(
-        [{"topic": "mix", "item_ids": ["a", "nope"], "importance": 5}],
-        by_id, get_logger())
+        [{"topic": "mix", "section": "Security", "item_ids": ["a", "nope"],
+          "importance": 5}], by_id, SECTIONS, get_logger())
     assert len(clusters) == 1
     assert clusters[0]["item_ids"] == ["a"]
     assert placed == {"a"}

@@ -26,7 +26,7 @@ from common import (PROCESSED_DIR, PROMPTS_DIR, default_date, get_logger,
                     setup_logging, write_json)
 from llm import LLM, LLMError, parse_json
 
-SOURCES = ["youtube", "reddit", "hn", "arxiv"]
+SOURCES = ["youtube", "reddit", "hn", "arxiv", "rss"]
 
 
 def _load_prompt() -> str:
@@ -60,6 +60,10 @@ def _compact(item: dict) -> dict:
     elif src == "arxiv":
         out["authors"] = item.get("authors")
         out["abstract"] = item.get("abstract")
+    elif src == "rss":
+        out["feed"] = item.get("feed")
+        out["author"] = item.get("author")
+        out["content"] = (item.get("content") or "")[:4000]
     return out
 
 

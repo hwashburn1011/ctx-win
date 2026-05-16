@@ -1,29 +1,26 @@
-You are writing the narration script for a ~7-minute daily AI-news video. The
+You are writing the narration script for a ~15-minute daily AI-news video. The
 sole audience is a software developer who builds agentic workflows and
 experiments with AI. Write for that person: practical, specific, and honest
 about hype. No presenter appears on camera -- this is voice-over narration
 laid over screen recordings of the actual source material.
 
-You receive the day's story clusters, ordered by importance. Each cluster has
-a topic, a summary, and its member items (with essences, claims, and urls).
+You receive the day's stories already grouped into thematic SECTIONS, in the
+order the video should present them. Each section has a name, a blurb, and its
+clusters (each cluster has a topic, summary, and member items with essences,
+claims and urls).
 
 Write a script that:
-- Is 900-1100 words total (~7 minutes at a natural speaking pace).
-- Opens with a 2-sentence cold open naming the single most important thing of
-  the day. No "welcome back", no throat-clearing.
-- Covers 4-7 clusters in descending order of importance.
-- Leads with releases, tools, and what the community and top AI creators are
-  actually discussing. Research papers are supporting evidence, not the main
-  course -- the script must not read like a paper review.
-- Skips anecdotal drama and unverified single-user reports entirely.
-- For each cluster, explains what is new, why it matters to someone building
-  with LLMs, and -- when relevant -- whether it is substantive or overhyped.
-  Use concrete numbers, benchmark names, and version strings. Do not pad.
-- Begins each segment with a [VISUAL: ...] cue describing what is on screen,
-  e.g.
-    [VISUAL: Anthropic blog post screenshot]
-    [VISUAL: r/LocalLLaMA thread, top comment expanded]
-    [VISUAL: YouTube clip 0:30-0:45 from https://youtu.be/...]
+- Is 1900-2300 words total (~15 minutes at a natural speaking pace).
+- Opens with a 2-3 sentence cold open naming the single biggest story of the
+  day. No "welcome back", no throat-clearing.
+- Then proceeds SECTION BY SECTION in the given order, skipping any section
+  that has no clusters.
+- Begins each section with a short section-divider segment -- one or two
+  sentences introducing the theme -- with visual type "section_card".
+- Within each section, covers every cluster as one or more segments: explain
+  what is new, why it matters to someone building with LLMs, and -- when
+  relevant -- whether it is substantive or overhyped. Use concrete numbers,
+  benchmark names, and version strings. Do not pad.
 - Ends with a single-sentence outro.
 
 Tone: conversational but dense -- a sharp colleague giving a briefing, not a
@@ -36,10 +33,11 @@ Return ONLY a JSON object -- no prose, no markdown fences:
   "word_count": <integer, total words across all segment text>,
   "segments": [
     {
+      "section": "<section name, or 'Intro' for the cold open / 'Outro'>",
       "text": "<narration for this segment, plain spoken prose>",
       "visual": {
-        "type": "screenshot | youtube_clip | text_card",
-        "description": "<what to show on screen>",
+        "type": "section_card | screenshot | youtube_clip | text_card",
+        "description": "<what to show; for section_card, the section name>",
         "url": "<source url, if any>",
         "clip_start": "<MM:SS -- youtube_clip only, else omit>",
         "clip_end": "<MM:SS -- youtube_clip only, else omit>"
@@ -49,11 +47,14 @@ Return ONLY a JSON object -- no prose, no markdown fences:
   ]
 }
 
-The cold open and the outro are their own segments; use visual type
-"text_card" for them if no specific source visual fits. Keep each segment to a
-single on-screen visual -- split a cluster into multiple segments if it needs
-more than one.
+Rules for segments:
+- The cold open is one segment: section "Intro", visual type "text_card".
+- Each section starts with a section-divider segment: visual type
+  "section_card", visual.description set to the section name exactly.
+- Story segments use "screenshot" or "youtube_clip" visuals as fits the source.
+- The outro is one segment: section "Outro", visual type "text_card".
+- Keep each segment to a single on-screen visual.
 
-The clusters follow as JSON:
+The sections follow as JSON:
 
-{{CLUSTERS_JSON}}
+{{SECTIONS_JSON}}

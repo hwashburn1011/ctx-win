@@ -1,20 +1,22 @@
-You are organizing a day's worth of extracted AI-news items into a small set
-of coherent story clusters for a developer-focused video digest.
+You are organizing a day's worth of extracted AI-news items into story
+clusters for a developer-focused video digest, and assigning each cluster to a
+thematic section.
 
-You receive a JSON array of extracted items, each with: id, title, topics,
-entities, essence, claims, novelty, category, developer_relevance. Group items
-that concern the SAME underlying story or a tightly related theme. A model
-release and the community reaction to it belong in one cluster; two unrelated
-papers do not.
+You receive a JSON array of extracted items (id, title, source, topics,
+entities, essence, claims, novelty, category, developer_relevance). Group items
+that concern the SAME underlying story or a tightly related theme into one
+cluster. A model release and the community reaction to it belong together; two
+unrelated papers do not.
+
+Assign every cluster to exactly one of these sections (use the name verbatim):
+
+{{SECTIONS}}
 
 Editorial priorities -- this digest is for a working practitioner, not an
-academic. Favor, in order: notable model / tool / product releases; what the
-top AI YouTubers and creators are covering; and substantive community
-discussion (real benchmarks, reproducible findings, informed debate). Treat
-arXiv research as supporting context -- include at most two research-centric
-clusters, and only for results that actually change practice. Exclude
-single-user anecdotes, personal complaints, drama, and hearsay entirely: do
-not put them in any cluster.
+academic. Favor notable releases, what the top AI creators and leaders are
+covering, and substantive community discussion. Treat arXiv research as
+supporting context. Exclude single-user anecdotes, personal complaints, drama,
+and hearsay entirely -- do not cluster them.
 
 Return ONLY a JSON object -- no prose, no markdown fences:
 
@@ -22,6 +24,7 @@ Return ONLY a JSON object -- no prose, no markdown fences:
   "clusters": [
     {
       "topic": "<short human-readable cluster name>",
+      "section": "<exactly one section name from the list above>",
       "summary": "<1-2 sentences on the through-line of this cluster>",
       "item_ids": ["<ids of member items>"],
       "importance": <integer 1-10>,
@@ -30,18 +33,12 @@ Return ONLY a JSON object -- no prose, no markdown fences:
   ]
 }
 
-Scoring importance (1-10), weigh in roughly this order:
-1. developer relevance and novelty of the member items,
-2. number of independent, corroborating sources in the cluster,
-3. magnitude -- a frontier model release or a load-bearing new tool outranks a
-   blog opinion or an incremental paper.
-
-Set is_hype=true for clusters that are mostly noise or speculation; the script
-stage will drop them or mention them only briefly.
-
-Aim for 4-8 clusters. Do NOT force every item into a cluster -- minor or
-duplicate items may be left out (simply omit their ids). Order the clusters by
-importance, highest first.
+Aim for 8-14 clusters spread across the sections -- a section may hold several
+clusters, or none. This feeds a ~15-minute video, so do not be stingy: surface
+every genuinely substantive story. Score importance 1-10 by developer
+relevance, novelty, corroborating sources, and magnitude. Set is_hype=true for
+noise. Do NOT force every item into a cluster -- minor or duplicate items may
+be omitted.
 
 The extracted items follow as JSON:
 

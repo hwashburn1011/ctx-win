@@ -23,6 +23,9 @@ channels:
   - handle: "@samwitteveenai"      # Sam Witteveen -- verify
   - handle: "@1littlecoder"        # 1littlecoder -- verify
   - handle: "@TheAIAdvantage"      # The AI Advantage -- verify
+  # --- AI leaders / researchers -----------------------------------------
+  - handle: "@AndrejKarpathy"      # Andrej Karpathy
+  - handle: "@NateBJones"          # Nate B Jones -- verify
   # --- add more below ---------------------------------------------------
   # - handle: "@sentdex"
   # - id: UC...
