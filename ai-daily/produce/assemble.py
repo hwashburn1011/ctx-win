@@ -56,18 +56,21 @@ def _run_ffmpeg(cmd, log, what: str) -> bool:
     return True
 
 
-def _add_lower_third(img, text: str, lt: dict):
-    """Return a copy of PIL image `img` with a source-attribution lower third."""
+def _lower_third_overlay(text: str, lt: dict, w: int, h: int):
+    """A *transparent* w x h RGBA image carrying just the attribution bar.
+
+    Used as-is to overlay onto a video clip (ffmpeg), and composited onto a
+    still by _add_lower_third. It must stay transparent everywhere except the
+    bar -- an opaque overlay would black out the clip underneath it.
+    """
     from PIL import Image, ImageDraw
-    base = img.convert("RGBA")
+    overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     if not text or not lt.get("enabled", True):
-        return base.convert("RGB")
-    w, h = base.size
+        return overlay
     box_h = lt.get("height", 56)
     margin = lt.get("margin", 40)
     font_size = lt.get("font_size", 28)
     font = _find_font(font_size)
-    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
     text_w = draw.textlength(text, font=font)
     y0 = h - box_h - margin
@@ -75,6 +78,14 @@ def _add_lower_third(img, text: str, lt: dict):
                    fill=(0, 0, 0, int(255 * lt.get("opacity", 0.55))))
     draw.text((margin, y0 + (box_h - font_size) // 2 - 2), text, font=font,
               fill=lt.get("text_color", "#ffffff"))
+    return overlay
+
+
+def _add_lower_third(img, text: str, lt: dict):
+    """Composite the attribution lower third onto `img`; returns opaque RGB."""
+    from PIL import Image
+    base = img.convert("RGBA")
+    overlay = _lower_third_overlay(text, lt, base.size[0], base.size[1])
     return Image.alpha_composite(base, overlay).convert("RGB")
 
 
@@ -173,8 +184,7 @@ def run(date, *, logger=None, dry_run=False, force=False):
 
             if visual_file and visual_file.suffix == ".mp4" and visual_file.exists():
                 lt_png = td / f"lt_{i:03d}.png"
-                base = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-                _add_lower_third(base, src, lt).convert("RGBA").save(lt_png)
+                _lower_third_overlay(src, lt, w, h).save(lt_png)
                 ok = _clip_segment(visual_file, lt_png, duration, seg_clip,
                                    fps, vcodec, log)
             else:

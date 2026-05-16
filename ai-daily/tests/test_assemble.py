@@ -23,3 +23,19 @@ def test_concat_list_uses_posix_paths_and_file_directive():
 
 def test_concat_list_empty():
     assert assemble._concat_list([]) == ""
+
+
+def test_lower_third_overlay_is_transparent_above_the_bar():
+    lt = {"enabled": True, "height": 56, "margin": 40, "font_size": 28}
+    img = assemble._lower_third_overlay("arxiv.org", lt, 600, 400)
+    assert img.mode == "RGBA"
+    # the area above the bar must be fully transparent -- an opaque overlay
+    # would black out the video clip it sits on
+    assert img.getpixel((300, 50))[3] == 0
+    # the bar itself (bottom-left) is drawn
+    assert img.getpixel((20, 320))[3] > 0
+
+
+def test_lower_third_overlay_empty_when_no_text():
+    img = assemble._lower_third_overlay("", {"enabled": True}, 200, 200)
+    assert img.getcolors() == [(200 * 200, (0, 0, 0, 0))]

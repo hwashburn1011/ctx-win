@@ -164,7 +164,8 @@ def _screenshot(page, url: str, out_path, sc_cfg: dict, log) -> bool:
     return False
 
 
-def _youtube_clip(url, start, end, out_path, max_seconds, w, h, log) -> bool:
+def _youtube_clip(url, start, end, out_path, max_seconds, player_clients,
+                  w, h, log) -> bool:
     try:
         import yt_dlp
     except ImportError:
@@ -183,6 +184,7 @@ def _youtube_clip(url, start, end, out_path, max_seconds, w, h, log) -> bool:
                 "format": "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
                 "download_ranges": yt_dlp.utils.download_range_func(None, [(s, e)]),
                 "force_keyframes_at_cuts": True,
+                "extractor_args": {"youtube": {"player_client": list(player_clients)}},
             }) as ydl:
                 ydl.download([url])
         except Exception as ex:  # noqa: BLE001
@@ -234,6 +236,8 @@ def run(date, *, logger=None, dry_run=False, force=False, limit=None):
     w, h = cfg.get("width", 1920), cfg.get("height", 1080)
     sc_cfg = cfg.get("screenshot", {})
     max_clip = cfg.get("clip", {}).get("max_seconds", 15)
+    clip_clients = (load_config("sources.yaml").get("youtube", {})
+                    .get("player_clients", ["web_safari", "android_vr"]))
 
     if dry_run:
         plan = [(s.get("visual") or {}).get("type", "text_card") for s in segments]
@@ -276,7 +280,7 @@ def run(date, *, logger=None, dry_run=False, force=False, limit=None):
                 fname = f"segment_{i:03d}.mp4"
                 ok = _youtube_clip(url, vis.get("clip_start"),
                                    vis.get("clip_end"), visuals_dir / fname,
-                                   max_clip, w, h, log)
+                                   max_clip, clip_clients, w, h, log)
                 kind = "youtube_clip"
             elif cue == "text_card":
                 fname = f"segment_{i:03d}.png"
